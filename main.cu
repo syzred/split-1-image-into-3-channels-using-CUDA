@@ -1,31 +1,31 @@
-//main.cu 0.984224ms
+//main.cu
 
-  //--------------------import original image
+        //------------------------------------import original image
 	Mat originalimage;
 	originalimage = imread("l0001.jpg", 1);
 	namedWindow("originalimage", CV_WINDOW_AUTOSIZE);
 	imshow("originalimage", originalimage);
 	waitKey(0);
 
-	//---------------------save image's raw data into pointer
+	//-------------------------------------save image's raw data into pointer
 	unsigned char *h_imagedata = (unsigned char *)calloc(width * height * imagechannelnum, sizeof(unsigned char));
 	h_imagedata = originalimage.data;
 
-	//-------------------copy to device
+	//------------------------------------copy to device
 	unsigned char *d_imagedata;
 	cudaMalloc(&d_imagedata, width * height * imagechannelnum);
 	cudaMemcpy(d_imagedata, h_imagedata, width * height * imagechannelnum, cudaMemcpyHostToDevice);
 
-	//--------------------declare device's outputs
+	//------------------------------------declare device's outputs
 	unsigned char *d_rchannel, *d_gchannel, *d_bchannel;
 	cudaMalloc(&d_rchannel, width * height);
 	cudaMalloc(&d_gchannel, width * height);
 	cudaMalloc(&d_bchannel, width * height);
 
-	dim3 blocks(width / K, height / K);
-	dim3 threads(K, K);
+	dim3 blocks(width * height / threadnum);
+	dim3 threads(threadnum);
 
-	//--------------------time and launch kernel
+	//------------------------------------time and launch kernel
 	float time_elapsed = 0;
 	cudaEvent_t start, stop;
 	cudaEventCreate(&start);
@@ -40,7 +40,7 @@
 	cudaEventDestroy(stop);
 	printf("time:%f ms\n", time_elapsed);
 
-	//------------------------copy the results to host
+	//------------------------------------copy the results to host
 	unsigned char *h_rchannel = (unsigned char *)calloc(width * height, sizeof(unsigned char));
 	unsigned char *h_gchannel = (unsigned char *)calloc(width * height, sizeof(unsigned char));
 	unsigned char *h_bchannel = (unsigned char *)calloc(width * height, sizeof(unsigned char));
@@ -48,7 +48,7 @@
 	cudaMemcpy(h_gchannel, d_gchannel, width * height, cudaMemcpyDeviceToHost);
 	cudaMemcpy(h_bchannel, d_bchannel, width * height, cudaMemcpyDeviceToHost);
 
-	//-------------------------show results
+	//------------------------------------show results
 	Mat red(height, width, CV_8UC1, (unsigned char*)h_rchannel);
 	vector<Mat> channels;
 	Mat empty;
