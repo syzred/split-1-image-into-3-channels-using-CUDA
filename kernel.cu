@@ -1,11 +1,11 @@
 //kernel.cu
 
+__global__ void
 split(unsigned char *image, unsigned char *r, unsigned char *g, unsigned char *b)
 {
-	int i = blockIdx.x*K + threadIdx.x;
-	int j = blockIdx.y*K + threadIdx.y;
+	int p = blockIdx.x*threadnum + threadIdx.x;
 
-	r[j * width + i] = image[(j * width + i) * imagechannelnum];
-	g[j * width + i] = image[(j * width + i) * imagechannelnum + 1];
-	b[j * width + i] = image[(j * width + i) * imagechannelnum + 2];
+	r[p] = image[p * imagechannelnum];
+	g[p] = image[p * imagechannelnum + 1];
+	b[p] = image[p * imagechannelnum + 2];
 }
